@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Health Chatbot</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <style>
+            /* Gradient border for chat container */
+            #chat {
+                border: 4px solid;
+                border-image: linear-gradient(90deg, #26a69a 0%, #1565c0 100%);
+                border-image-slice: 1;
+            }
+
+            /* Glassmorphism effect */
+            #chat {
+                background: rgba(255,255,255,0.85);
+                backdrop-filter: blur(8px);
+            }
+
+            /* Animated glowing send button */
+            button {
+                box-shadow: 0 0 18px 0 #26a69a55, 0 2px 12px rgba(44, 62, 80, 0.13);
+                position: relative;
+                overflow: hidden;
+            }
+            button::after {
+                content: "";
+                position: absolute;
+                left: 0; top: 0;
+                width: 100%; height: 100%;
+                border-radius: 16px;
+                background: radial-gradient(circle, #26a69a33 0%, transparent 70%);
+                opacity: 0;
+                transition: opacity 0.3s;
+                z-index: 0;
+            }
+            button:hover::after {
+                opacity: 1;
+            }
+
+            /* Add a subtle bounce to floating icons */
+            .floating-icon {
+                animation: floatIcon 8s infinite alternate, bounce 2s infinite;
+            }
+            @keyframes bounce {
+                0%, 100% { transform: translateY(0);}
+                50% { transform: translateY(-8px);}
+            }
+
+            /* Add a fade-in effect to chat container */
+            #chat {
+                animation: fadeInChat 1.2s;
+            }
+            @keyframes fadeInChat {
+                from { opacity: 0; transform: scale(0.95);}
+                to { opacity: 1; transform: scale(1);}
+            }
+
+            /* Add a gradient to the input box */
+            #userInput {
+                background: linear-gradient(90deg, #e0f7fa 0%, #f7fbfc 100%);
+            }
+
+            /* Add a shadow to messages on hover */
+            .msg:hover {
+                box-shadow: 0 6px 24px rgba(38,166,154,0.18);
+                transition: box-shadow 0.2s;
+            }
+
+            /* Add a pulse animation to the microphone button */
+            button:nth-child(3) {
+                animation: pulseMic 1.8s infinite;
+            }
+            @keyframes pulseMic {
+                0% { box-shadow: 0 0 0 0 #26a69a55;}
+                70% { box-shadow: 0 0 0 12px transparent;}
+                100% { box-shadow: 0 0 0 0 transparent;}
+            }
+
+        body {
+            font-family: 'Montserrat', 'Roboto', Arial, sans-serif;
+            background: linear-gradient(120deg, #e0f7fa 0%, #fff 100%);
+            min-height: 100vh;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+        /* Animated background shapes */
+        .bg-shape {
+            position: absolute;
+            border-radius: 50%;
+            opacity: 0.12;
+            filter: blur(18px);
+            z-index: 0;
+            animation: bgMove 10s infinite alternate;
+        }
+        .bg1 { width: 320px; height: 320px; background: #26a69a; top: -80px; left: -80px; }
+        .bg2 { width: 220px; height: 220px; background: #1565c0; bottom: -60px; right: -60px; animation-delay: 2s;}
+        .bg3 { width: 180px; height: 180px; background: #2d7a7a; top: 60%; left: 70%; animation-delay: 4s;}
+        @keyframes bgMove {
+            0% { transform: scale(1) translateY(0);}
+            100% { transform: scale(1.08) translateY(24px);}
+        }
+        #chat {
+            width: 100%;
+            max-width: 550px;
+            background: #fff;
+            padding: 44px 28px 28px 28px;
+            border-radius: 28px;
+            box-shadow: 0 12px 36px rgba(38,166,154,0.16), 0 2px 12px rgba(44,62,80,0.11);
+            position: relative;
+            overflow: hidden;
+            border: 2px solid #26a69a33;
+            z-index: 1;
+        }
+        h2 {
+            text-align: center;
+            margin-bottom: 22px;
+            font-size: 2.2rem;
+            color: #26a69a;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 14px;
+            background: linear-gradient(90deg, #e0f7fa 60%, #fff 100%);
+            border-radius: 18px;
+            padding: 10px 0;
+            box-shadow: 0 2px 8px rgba(38,166,154,0.07);
+        }
+        h2 i {
+            font-size: 1.7rem;
+            color: #26a69a;
+            background: #e0f7fa;
+            border-radius: 50%;
+            padding: 8px;
+            box-shadow: 0 1px 6px rgba(38,166,154,0.09);
+        }
+        #messages {
+            min-height: 140px;
+            max-height: 260px;
+            overflow-y: auto;
+            margin-bottom: 22px;
+            padding-right: 8px;
+            scrollbar-width: thin;
+            scrollbar-color: #26a69a #e0f7fa;
+        }
+        #messages::-webkit-scrollbar {
+            width: 7px;
+            background: #e0f7fa;
+        }
+        #messages::-webkit-scrollbar-thumb {
+            background: #26a69a;
+            border-radius: 8px;
+        }
+        .msg {
+            margin: 12px 0;
+            padding: 14px 18px;
+            border-radius: 16px;
+            font-size: 1.07rem;
+            word-break: break-word;
+            box-shadow: 0 2px 8px rgba(44, 62, 80, 0.09);
+            animation: fadeIn 0.5s;
+            position: relative;
+            transition: box-shadow 0.2s;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px);}
+            to { opacity: 1; transform: translateY(0);}
+        }
+        .user {
+            background: linear-gradient(90deg, #e3f2fd 80%, #fff 100%);
+            color: #1565c0;
+            text-align: right;
+            border-top-right-radius: 0;
+            border: 1.5px solid #1565c033;
+            align-self: flex-end;
+            box-shadow: 0 2px 8px rgba(21,101,192,0.07);
+        }
+        .user::after {
+            content: "\f007";
+            font-family: "Font Awesome 6 Free";
+            font-weight: 900;
+            position: absolute;
+            right: 18px; top: 18px;
+            color: #1565c0;
+            font-size: 1.2rem;
+            opacity: 0.4;
+        }
+        .bot {
+            background: linear-gradient(90deg, #e0f7fa 60%, #b2ebf2 100%);
+            color: #00897b;
+            text-align: left;
+            border-top-left-radius: 0;
+            align-self: flex-start;
+            border: 1.5px solid #00897b33;
+            box-shadow: 0 2px 8px rgba(0,137,123,0.07);
+        }
+        .bot::after {
+            content: "\f0f0";
+            font-family: "Font Awesome 6 Free";
+            font-weight: 900;
+            position: absolute;
+            left: 18px; top: 18px;
+            color: #00897b;
+            font-size: 1.2rem;
+            opacity: 0.4;
+        }
+        #inputArea {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            position: relative;
+            z-index: 1;
+            margin-top: 6px;
+        }
+        #userInput {
+            flex: 1;
+            padding: 18px;
+            border: 2px solid #b0bec5;
+            border-radius: 16px;
+            font-size: 1.15rem;
+            outline: none;
+            transition: border 0.2s, box-shadow 0.2s;
+            background: #f7fbfc;
+            box-shadow: 0 2px 10px rgba(44, 62, 80, 0.08);
+        }
+        #userInput:focus {
+            border-color: #26a69a;
+            background: #e0f7fa;
+            box-shadow: 0 4px 18px rgba(44, 62, 80, 0.13);
+        }
+        button {
+            padding: 18px 38px;
+            background: linear-gradient(90deg, #26a69a 0%, #2d7a7a 100%);
+            color: #fff;
+            border: none;
+            border-radius: 16px;
+            font-size: 1.15rem;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 2px 12px rgba(44, 62, 80, 0.13);
+            transition: background 0.2s, transform 0.1s, box-shadow 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            letter-spacing: 1px;
+        }
+        button:hover {
+            background: linear-gradient(90deg, #2d7a7a 0%, #26a69a 100%);
+            transform: translateY(-2px) scale(1.07);
+            box-shadow: 0 8px 28px rgba(44, 62, 80, 0.19);
+        }
+        button:active {
+            transform: scale(0.98);
+        }
+        .typing {
+            display: inline-block;
+            width: 48px;
+            height: 22px;
+            vertical-align: middle;
+        }
+        .typing span {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            margin: 0 2px;
+            background: #26a69a;
+            border-radius: 50%;
+            opacity: 0.6;
+            animation: blink 1.2s infinite;
+        }
+        .typing span:nth-child(2) { animation-delay: 0.3s;}
+        .typing span:nth-child(3) { animation-delay: 0.6s;}
+        @keyframes blink {
+            0%, 80%, 100% { opacity: 0.6;}
+            40% { opacity: 1;}
+        }
+        /* Decorative floating icons */
+        .floating-icon {
+            position: absolute;
+            z-index: 2;
+            opacity: 0.13;
+            pointer-events: none;
+            animation: floatIcon 8s infinite alternate;
+        }
+        .icon1 { top: 18px; left: 18px; font-size: 3.2rem; color: #26a69a;}
+        .icon2 { bottom: 22px; right: 22px; font-size: 2.6rem; color: #2d7a7a;}
+        .icon3 { top: 50%; right: -30px; font-size: 2.9rem; color: #1565c0;}
+        @keyframes floatIcon {
+            0% { transform: translateY(0);}
+            100% { transform: translateY(18px);}
+        }
+        /* Glow effect on chat container */
+        #chat::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            border-radius: 28px;
+            box-shadow: 0 0 60px 0 #26a69a55;
+            z-index: 0;
+            pointer-events: none;
+        }
+        /* Responsive */
+        @media (max-width: 600px) {
+            #chat { padding: 18px 6px 12px 6px; }
+            h2 { font-size: 1.3rem; }
+            button { padding: 12px 18px; font-size: 1rem;}
+            #userInput { font-size: 1rem; padding: 10px;}
+            .floating-icon { font-size: 1.5rem !important;}
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-shape bg1"></div>
+    <div class="bg-shape bg2"></div>
+    <div class="bg-shape bg3"></div>
+    <div id="chat">
+        <span class="floating-icon icon1"><i class="fa-solid fa-heart-pulse"></i></span>
+        <span class="floating-icon icon2"><i class="fa-solid fa-leaf"></i></span>
+        <span class="floating-icon icon3"><i class="fa-solid fa-user-nurse"></i></span>
+        <h2><i class="fa-solid fa-stethoscope"></i> Medimitra </h2>
+        <div id="messages"></div>
+        <div id="inputArea">
+            <input type="text" id="userInput" placeholder="Describe your symptoms...">
+            <button onclick="send()"><i class="fa-solid fa-paper-plane"></i> Send</button>
+            <button onclick="startListening()"><i class="fa-solid fa-microphone"></i></button>
+
+        </div>
+    </div>
+    <script src="script.js"></script>
+    <script>
+        function speak(text) {
+            const utter = new SpeechSynthesisUtterance(text);
+            utter.lang = 'en-IN';
+            speechSynthesis.speak(utter);
+        }
+        function startListening() {
+            const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+            recognition.lang = 'en-IN';
+            recognition.start();
+            recognition.onresult = (event) => {
+                removeTyping();
+                showTyping();
+                    document.getElementById("userInput").value = event.results[0][0].transcript;
+                send();
+            };
+        }
+        function showTyping() {
+            let chatBox = document.getElementById("messages");
+            let typingDiv = document.createElement("div");
+            typingDiv.className = "msg bot";
+            typingDiv.id = "typing";
+            typingDiv.innerHTML = `<strong>Bot:</strong> <span class="typing"><span></span><span></span><span></span></span>`;
+            chatBox.appendChild(typingDiv);
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+        function removeTyping() {
+            let typingDiv = document.getElementById("typing");
+            if (typingDiv) typingDiv.remove();
+        }
+        function send() {
+            let input = document.getElementById("userInput").value.trim();
+            if (!input) return;
+            let chatBox = document.getElementById("messages");
+
+            chatBox.innerHTML += `<div class='msg user'><strong>You:</strong> ${input}</div>`;
+            chatBox.scrollTop = chatBox.scrollHeight;
+
+            showTyping();
+
+            fetch("/get_diagnosis", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ message: input })
+            })
+            .then(res => res.json())
+            .then(data => {
+                removeTyping();
+                chatBox.innerHTML += `<div class='msg bot'><strong>Bot:</strong> ${data.response}</div>`;
+                document.getElementById("userInput").value = "";
+                chatBox.scrollTop = chatBox.scrollHeight;
+            });
+        }
+        document.getElementById("userInput").addEventListener("keydown", function(e) {
+            if (e.key === "Enter") send();
+        });
+    </script>
+</body>
+</html>
